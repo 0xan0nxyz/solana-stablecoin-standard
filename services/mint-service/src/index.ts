@@ -24,6 +24,11 @@ const RPC = process.env.SOLANA_RPC_URL ?? "http://localhost:8899";
 const SSS_PROGRAM = process.env.SSS_TOKEN_PROGRAM_ID ?? "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV";
 const API_SECRET = process.env.API_SECRET ?? "";
 
+// MOCK_EXECUTION=true (default) — verifies mint account exists on-chain but does NOT
+// submit a real transaction. Set MOCK_EXECUTION=false and provide AUTHORITY_KEYPAIR_PATH
+// to enable live execution via the SSS SDK.
+const MOCK_EXECUTION = (process.env.MOCK_EXECUTION ?? "true") !== "false";
+
 const connection = new Connection(RPC, "confirmed");
 const START_TIME = Date.now();
 
@@ -77,6 +82,7 @@ app.get("/health", (_req, res) => {
     status: "ok",
     service: "mint-service",
     rpc: RPC,
+    mockExecution: MOCK_EXECUTION,
     uptime: Math.floor((Date.now() - START_TIME) / 1000),
   });
 });
@@ -121,7 +127,7 @@ app.post("/api/v1/mint/request", auth, (req: Request, res: Response) => {
     }
   });
 
-  res.status(202).json({ id, status: entry.status, type: entry.type });
+  res.status(202).json({ id, status: entry.status, type: entry.type, mockExecution: MOCK_EXECUTION });
 });
 
 async function executeMint(id: string): Promise<void> {
@@ -131,16 +137,24 @@ async function executeMint(id: string): Promise<void> {
   r.updatedAt = now();
 
   // Verify the mint account exists on-chain as a basic sanity check.
-  // Full execution requires an authority keypair; inject via AUTHORITY_KEYPAIR_PATH.
   const mintPk = new PublicKey(r.mint);
   const info = await connection.getAccountInfo(mintPk);
   if (!info) throw new Error(`Mint account not found: ${r.mint}`);
 
-  // Placeholder: production impl calls SolanaStablecoin.mintTokens() via SDK.
-  // Mark confirmed for demo purposes when the mint account is live.
-  r.status = "confirmed";
-  r.confirmedAt = now();
-  r.updatedAt = now();
+  if (MOCK_EXECUTION) {
+    // MOCK MODE: mint account existence verified but no transaction submitted.
+    // Production: set MOCK_EXECUTION=false and provide AUTHORITY_KEYPAIR_PATH;
+    // execution will call SolanaStablecoin.mintTokens() via the SSS SDK.
+    r.status = "confirmed";
+    r.signature = "mock_no_tx_submitted";
+    r.confirmedAt = now();
+    r.updatedAt = now();
+    return;
+  }
+
+  // Production path — requires AUTHORITY_KEYPAIR_PATH in env.
+  throw new Error("Live execution not configured: set MOCK_EXECUTION=false and AUTHORITY_KEYPAIR_PATH");
+
 }
 
 // POST /api/v1/burn/request
@@ -213,6 +227,9 @@ app.get("/api/v1/supply", auth, async (req: Request, res: Response) => {
 
 app.listen(PORT, () => {
   console.log(`[mint-service] listening on port ${PORT}  rpc=${RPC}`);
+  if (MOCK_EXECUTION) {
+    console.warn("[mint-service] MOCK_EXECUTION=true — mint/burn requests will NOT submit transactions. Set MOCK_EXECUTION=false and AUTHORITY_KEYPAIR_PATH for production.");
+  }
 });
 
 export default app;

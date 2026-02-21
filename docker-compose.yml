@@ -59,6 +59,7 @@ services:
     environment:
       <<: *common-env
       SERVICE_PORT: "3001"
+      MOCK_EXECUTION: "${MOCK_EXECUTION:-true}"
     depends_on:
       redis:
         condition: service_healthy
