@@ -43,7 +43,7 @@ Program IDs (same on localnet and devnet):
 
 | Program | ID |
 |---|---|
-| `sss_token` | `7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV` |
+| `sss_token` | `E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP` |
 | `transfer_hook` | `6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY` |
 
 **3. Revoke upgrade authority (production)**
@@ -78,7 +78,36 @@ sss-token init --name "USD Backed" --symbol "USDB" --preset sss-2 \
   --decimals 6 --uri "https://example.com/meta.json" --keypair ./authority.json
 ```
 
-Options: `--preset sss-1|sss-2` (default `sss-1`), `--decimals` (default `6`), `--uri`, `--mint-keypair <path>` (auto-generated if omitted). Saves the mint address to `.sss-config.json`.
+Options: `--preset sss-1|sss-2` (default `sss-1`), `--decimals` (default `6`), `--uri`, `--config <path>` / `--custom <path>` (JSON or TOML config file), `--mint-keypair <path>` (auto-generated if omitted). Saves the mint address to `.sss-config.json`.
+
+Initialize from a config file (JSON or TOML):
+
+```bash
+sss-token init --config ./my-stablecoin.json --keypair ./authority.json
+sss-token init --custom ./config.toml --keypair ./authority.json
+```
+
+JSON config format:
+
+```json
+{
+  "name": "Custom Stable",
+  "symbol": "CUSD",
+  "decimals": 6,
+  "uri": "",
+  "preset": "sss-2"
+}
+```
+
+TOML config format:
+
+```toml
+name = "Custom Stable"
+symbol = "CUSD"
+decimals = 6
+uri = ""
+preset = "sss-2"
+```
 
 ### `status`
 
@@ -134,6 +163,27 @@ sss-token blacklist list
 
 ```bash
 sss-token seize <FROM_WALLET> <AMOUNT> --to <TREASURY_WALLET> --keypair ./seizer.json
+```
+
+### `supply`
+
+```bash
+sss-token supply --mint <MINT_ADDRESS>
+```
+
+Shows the current circulating supply (totalMinted - totalBurned).
+
+### `minters`
+
+```bash
+# List all minters with quota info
+sss-token minters list --mint <MINT_ADDRESS>
+
+# Add a new minter with a quota (in display units)
+sss-token minters add <ADDRESS> --quota 10000 --keypair ./authority.json
+
+# Remove a minter
+sss-token minters remove <ADDRESS> --keypair ./authority.json
 ```
 
 The `<FROM_WALLET>`'s token account must be frozen before calling.

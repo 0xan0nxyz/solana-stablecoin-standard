@@ -4,6 +4,33 @@ import { SolanaStablecoin } from "@stbr/sss-sdk";
 import { loadSssConfig, loadKeypair, makeConnection } from "../utils/config.js";
 import { printSuccess, printError } from "../utils/output.js";
 
+export function registerSupply(program: Command): void {
+  program
+    .command("supply")
+    .description("Show current circulating supply")
+    .action(async (_opts, cmd) => {
+      const globalOpts = cmd.parent!.opts() as { cluster: string; keypair?: string; mint?: string };
+      try {
+        const mintAddr = globalOpts.mint ?? loadSssConfig().mint;
+        if (!mintAddr) throw new Error("No --mint specified and .sss-config.json not found. Run `sss-token init` first.");
+
+        const connection = makeConnection(globalOpts.cluster);
+        const coin = await SolanaStablecoin.load(connection, new PublicKey(mintAddr));
+        const supply = await coin.getTotalSupply();
+        const info = await coin.getInfo();
+        const divisor = BigInt(10 ** info.decimals);
+        const displaySupply = Number(supply) / Number(divisor);
+
+        printSuccess("Supply", {
+          mint: mintAddr,
+          "circulating supply": `${displaySupply} ${info.symbol}`,
+        });
+      } catch (err) {
+        printError(err);
+      }
+    });
+}
+
 export function registerStatus(program: Command): void {
   program
     .command("status")

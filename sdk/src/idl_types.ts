@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/sss_token.json`.
  */
 export type SssToken = {
-  "address": "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV",
+  "address": "E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP",
   "metadata": {
     "name": "sssToken",
     "version": "0.1.0",

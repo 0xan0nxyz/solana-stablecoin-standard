@@ -1,4 +1,4 @@
-import type { PublicKey } from "@solana/web3.js";
+import type { Keypair, PublicKey } from "@solana/web3.js";
 
 /**
  * Configuration passed to SolanaStablecoin.create()
@@ -39,4 +39,24 @@ export interface StablecoinInfo {
   enableDefaultFrozen: boolean;
   totalMinted: bigint;
   totalBurned: bigint;
+}
+
+export interface MintParams {
+  recipient: PublicKey;
+  amount: bigint;
+  minter: Keypair;
+}
+
+export interface BurnParams {
+  amount: bigint;
+  burner: Keypair;
+}
+
+/**
+ * Minter info returned by getMinters()
+ */
+export interface MinterInfoEntry {
+  address: PublicKey;
+  quota: bigint;
+  minted: bigint;
 }

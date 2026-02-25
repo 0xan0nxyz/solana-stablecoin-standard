@@ -23,7 +23,7 @@ const {
 } = anchorPkg as unknown as AnchorMod;
 import { createRequire } from "module";
 import type { SssToken } from "./idl_types.js";
-import type { CreateConfig, StablecoinInfo } from "./types.js";
+import type { CreateConfig, StablecoinInfo, MintParams, BurnParams, MinterInfoEntry } from "./types.js";
 import {
   deriveStablecoinConfig,
   deriveRoleManager,
@@ -503,6 +503,69 @@ export class SolanaStablecoin {
       .accountsPartial({
         authority: authority.publicKey,
         stablecoinConfig: this._configPda,
+      })
+      .signers([authority])
+      .rpc({ commitment: "confirmed" });
+  }
+
+  async mint(params: MintParams): Promise<string> {
+    return this.mintTokens(params.minter, params.recipient, params.amount);
+  }
+
+  async burn(params: BurnParams): Promise<string> {
+    return this.burnTokens(params.burner, params.amount);
+  }
+
+  async getTotalSupply(): Promise<bigint> {
+    const info = await this.getInfo();
+    return info.totalMinted - info.totalBurned;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Minter management
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Fetch all registered minters with their quota and minted amounts.
+   */
+  async getMinters(): Promise<MinterInfoEntry[]> {
+    const [roleManagerPda] = await deriveRoleManager(this._configPda);
+    const roles = await this._program.account.roleManager.fetch(roleManagerPda);
+    const entries: MinterInfoEntry[] = [];
+
+    for (const minterPk of roles.minters) {
+      const [minterInfoPda] = await deriveMinterInfo(this._configPda, minterPk);
+      try {
+        const info = await this._program.account.minterInfo.fetch(minterInfoPda);
+        entries.push({
+          address: minterPk,
+          quota: BigInt(info.quota.toString()),
+          minted: BigInt(info.minted.toString()),
+        });
+      } catch {
+        entries.push({ address: minterPk, quota: 0n, minted: 0n });
+      }
+    }
+    return entries;
+  }
+
+  /**
+   * Remove a minter from the role list.
+   *
+   * @param authority - Master authority Keypair
+   * @param minter - Public key of the minter to remove
+   * @returns Transaction signature
+   */
+  async removeMinter(authority: Keypair, minter: PublicKey): Promise<string> {
+    const program = this.programWithSigner(authority);
+    const [roleManagerPda] = await deriveRoleManager(this._configPda);
+
+    return program.methods
+      .removeRole({ minter: {} }, minter)
+      .accountsPartial({
+        authority: authority.publicKey,
+        stablecoinConfig: this._configPda,
+        roleManager: roleManagerPda,
       })
       .signers([authority])
       .rpc({ commitment: "confirmed" });

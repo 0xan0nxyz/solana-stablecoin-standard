@@ -8,7 +8,7 @@ additional Token-2022 extensions plus two additional roles and three additional
 instructions are layered on top. SSS-2 is designed for regulated stablecoins
 that require on-chain blacklisting, asset seizure, and default-frozen accounts.
 
-SSS program ID: `7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV`
+SSS program ID: `E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP`
 Transfer Hook program ID: `6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY`
 
 ## Token-2022 Extensions (SSS-2)

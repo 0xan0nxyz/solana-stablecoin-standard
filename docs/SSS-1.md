@@ -8,7 +8,7 @@ is no permanent delegate, no transfer hook, and no default-frozen state. All
 token accounts start unfrozen and transfers are unrestricted at the protocol
 level.
 
-SSS program ID: `7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV`
+SSS program ID: `E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP`
 
 ## Token-2022 Extensions (SSS-1)
 

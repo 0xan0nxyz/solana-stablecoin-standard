@@ -50,7 +50,7 @@ Both presets share the same on-chain program. The preset chosen at initializatio
 
 | Program | Localnet | Devnet |
 |---|---|---|
-| `sss_token` | `7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV` | `7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV` |
+| `sss_token` | `E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP` | `E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP` |
 | `transfer_hook` | `6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY` | `6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY` |
 
 ## Quick Start
@@ -68,7 +68,7 @@ Both presets share the same on-chain program. The preset chosen at initializatio
 anchor test
 ```
 
-Starts a local validator, deploys both programs, and runs 25 integration tests covering the full SSS-1 and SSS-2 lifecycles plus SDK integration tests.
+Starts a local validator, deploys both programs, and runs 32 integration tests covering the full SSS-1 and SSS-2 lifecycles, SDK integration tests, convenience wrappers, minter management, and CLI config parsing.
 
 ### Build the SDK and CLI
 
@@ -89,6 +89,12 @@ Deploy an SSS-2 compliant stablecoin:
 
 ```bash
 sss-token init --name "USD Backed" --symbol "USDB" --preset sss-2
+```
+
+Deploy from a TOML or JSON config file:
+
+```bash
+sss-token init --custom config.toml
 ```
 
 Mint tokens to a recipient:
@@ -184,7 +190,7 @@ solana-stablecoin-standard/
 └── tests/
     ├── sss-1.ts                  SSS-1 integration tests (8 cases)
     ├── sss-2.ts                  SSS-2 integration tests (6 cases)
-    └── sdk.ts                    TypeScript SDK integration tests (11 cases)
+    └── sdk.ts                    TypeScript SDK integration tests (18 cases)
 ```
 
 ## Documentation
@@ -218,24 +224,19 @@ Services share Redis (cache/queue) and Postgres (audit trail). Configure via env
 
 ## Devnet Proof
 
-> **Status: pending SOL funding**
->
-> Deployer wallet: `3FSj4hjUY156gTEFr3FoJH6RVxeYoaBV7gssTNFUsRLV`
->
-> Fund with ≥ 4 SOL at https://faucet.solana.com, then run:
-> ```bash
-> ./scripts/devnet-deploy.sh
-> ```
-
-Once deployed, this section will be updated with:
+Both programs are live on Solana devnet. The full SSS-1 and SSS-2 lifecycles were exercised with real on-chain transactions.
 
 | Item | Value |
 |---|---|
-| `sss_token` program ID | `7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV` |
-| `transfer_hook` program ID | `6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY` |
-| SSS-1 init tx | — |
-| SSS-2 init tx | — |
-| Mint tx | — |
-| Blacklist + blocked transfer tx | — |
-| Seize tx | — |
-| Deployed at | — |
+| `sss_token` program ID | [`E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP`](https://explorer.solana.com/address/E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP?cluster=devnet) |
+| `transfer_hook` program ID | [`6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY`](https://explorer.solana.com/address/6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY?cluster=devnet) |
+| SSS-1 init tx | [`2PLTPtcus…`](https://explorer.solana.com/tx/2PLTPtcusFhNB7j6nMM2XceCEgvXEuKYAacnBGXKGWjm3soFSeSvrWqrD8ki5Y9EaKRQihnLRmheS81DJ7J8zymz?cluster=devnet) |
+| SSS-1 mint tx | [`3BhSErVFf…`](https://explorer.solana.com/tx/3BhSErVFfiMmaQwnZ42rcCizUtCxKXJS7P5wsXXkVnNsipbU7JnaUH5FhDcFS5szSVd743fdf8irJHgKHUHfpe6t?cluster=devnet) |
+| SSS-1 freeze tx | [`2nXLsmgtt…`](https://explorer.solana.com/tx/2nXLsmgttGFSSu9gALQSu22k8e2wyKSWbjpZaUwoPCv4fcRvMAFCE4bt1PyKd2rsvzniwGPAKinb6dpRpwaGuzi5?cluster=devnet) |
+| SSS-1 thaw tx | [`3DyKT2KnT…`](https://explorer.solana.com/tx/3DyKT2KnTauE3UTpEk6jy3s2drh17LyFH9RzJFHFYuhaBzLcv2PsxaC1hfLdUrDGuubKh8wdeW68sEy23dzp235V?cluster=devnet) |
+| SSS-2 init tx | [`LjecGUqrJ…`](https://explorer.solana.com/tx/LjecGUqrJ3rmTmKv3tAWEBAySiH5QYimb8xjpESFo4RoM7UH52Hj89RaZm8sTfLKeEAc8o2zfeV8mvFCtJQ7QRU?cluster=devnet) |
+| SSS-2 mint tx | [`2RNyykHzH…`](https://explorer.solana.com/tx/2RNyykHzHruXHXGh851RMjbg6Jti6EQcxyuYpXqAxgimBfCRuqQQjEZCPVA9xoUZbfEAZpZoXbFyiCBbLBXqk5TV?cluster=devnet) |
+| SSS-2 blacklist add tx | [`3NEU9Uxuu…`](https://explorer.solana.com/tx/3NEU9UxuuNy2pnAtxEM4z5Siq6aDv4EpWjJDai3ir56P9CWU8uzoEFaSubAH7U5pGyUmTXE7HF5kq5PXEcDh7UmG?cluster=devnet) |
+| SSS-2 seize tx | [`67HNNADoC…`](https://explorer.solana.com/tx/67HNNADoCFrxby6syhMK74986vZvYLwLsDePLaWqG1BRgv7pVbSEbwGaCwQwKWLpkH6UxshVTW3F65DmNbTHrhsr?cluster=devnet) |
+| SSS-2 blacklist remove tx | [`4wjK18Y69…`](https://explorer.solana.com/tx/4wjK18Y69pZraPnDriEecnQ84Q7htSGFgSr5h8yYqbw5WoJMmdgL6CE4ZUqxzZo6vgoj3rKQrfnciubmCevKzLo9?cluster=devnet) |
+| Deployed at | Sat, 21 Feb 2026 21:40:53 UTC |

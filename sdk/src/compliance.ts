@@ -158,6 +158,21 @@ export class ComplianceModule {
     return accountInfo !== null;
   }
 
+  async blacklistAdd(
+    address: PublicKey,
+    reason: string,
+    blacklister: Keypair
+  ): Promise<string> {
+    return this.addToBlacklist(blacklister, address, reason);
+  }
+
+  async blacklistRemove(
+    address: PublicKey,
+    blacklister: Keypair
+  ): Promise<string> {
+    return this.removeFromBlacklist(blacklister, address);
+  }
+
   /**
    * Seize tokens from a frozen account to a treasury account.
    *

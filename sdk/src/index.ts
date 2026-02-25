@@ -11,7 +11,7 @@ export { SolanaStablecoin } from "./stablecoin.js";
 export { ComplianceModule } from "./compliance.js";
 
 // TypeScript interfaces
-export type { CreateConfig, StablecoinInfo } from "./types.js";
+export type { CreateConfig, StablecoinInfo, MintParams, BurnParams, MinterInfoEntry } from "./types.js";
 
 // Preset configurations
 export { SSS_1, SSS_2, SSS_TOKEN_PROGRAM_ID, HOOK_PROGRAM_ID } from "./presets.js";

@@ -6,11 +6,11 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-sss_token = "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV"
+sss_token = "E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP"
 transfer_hook = "6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY"
 
 [programs.localnet]
-sss_token = "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV"
+sss_token = "E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP"
 transfer_hook = "6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY"
 
 [registry]

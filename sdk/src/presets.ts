@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 
 /** Canonical SSS Token program ID */
 export const SSS_TOKEN_PROGRAM_ID = new PublicKey(
-  "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV"
+  "E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP"
 );
 
 /** Canonical Transfer Hook program ID */

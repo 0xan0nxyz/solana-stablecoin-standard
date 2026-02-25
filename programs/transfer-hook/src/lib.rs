@@ -8,7 +8,7 @@ use instructions::*;
 declare_id!("6tULvFAJ7HfaMsjqcUyS7G3kJyncrBsth9kp2UGramiY");
 
 pub mod sss_token_program {
-    anchor_lang::declare_id!("7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV");
+    anchor_lang::declare_id!("E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP");
 }
 
 const BLACKLIST_SEED: &[u8] = b"blacklist";

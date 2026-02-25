@@ -157,6 +157,62 @@ async transferAuthority(authority: Keypair, newAuthority: PublicKey): Promise<st
 
 Atomically transfers master authority to `newAuthority`. Irreversible without the new authority's cooperation. Verify the new address before signing.
 
+### `getTotalSupply`
+
+```typescript
+async getTotalSupply(): Promise<bigint>
+```
+
+Returns the circulating supply (totalMinted - totalBurned) in raw token units.
+
+```typescript
+const supply = await coin.getTotalSupply(); // e.g. 1_000_000n for 1.0 USDB
+```
+
+### `mint` (convenience)
+
+```typescript
+async mint(params: { recipient: PublicKey; amount: bigint; minter: Keypair }): Promise<string>
+```
+
+Object-style wrapper around `mintTokens`. Matches the bounty spec API.
+
+```typescript
+await coin.mint({ recipient: walletPk, amount: 1_000_000n, minter: minterKp });
+```
+
+### `burn` (convenience)
+
+```typescript
+async burn(params: { amount: bigint; burner: Keypair }): Promise<string>
+```
+
+Object-style wrapper around `burnTokens`.
+
+### `getMinters`
+
+```typescript
+async getMinters(): Promise<MinterInfoEntry[]>
+```
+
+Returns all registered minters with their quota and minted amounts. Each entry:
+
+```typescript
+interface MinterInfoEntry {
+  address: PublicKey;
+  quota: bigint;   // 0n = unlimited
+  minted: bigint;
+}
+```
+
+### `removeMinter`
+
+```typescript
+async removeMinter(authority: Keypair, minter: PublicKey): Promise<string>
+```
+
+Removes a minter from the role list. Only the master authority may call this.
+
 ### `compliance` (getter)
 
 ```typescript
@@ -190,6 +246,22 @@ async removeFromBlacklist(blacklister: Keypair, address: PublicKey): Promise<str
 ```
 
 Closes the `BlacklistEntry` PDA. The address can transact again once this confirms.
+
+### `blacklistAdd` (convenience alias)
+
+```typescript
+async blacklistAdd(address: PublicKey, reason: string, blacklister: Keypair): Promise<string>
+```
+
+Alias for `addToBlacklist` with reordered parameters matching the bounty spec API.
+
+### `blacklistRemove` (convenience alias)
+
+```typescript
+async blacklistRemove(address: PublicKey, blacklister: Keypair): Promise<string>
+```
+
+Alias for `removeFromBlacklist` with reordered parameters.
 
 ### `isBlacklisted`
 

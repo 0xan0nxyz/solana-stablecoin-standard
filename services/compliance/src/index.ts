@@ -22,7 +22,7 @@ import { randomUUID } from "crypto";
 
 const PORT = parseInt(process.env.SERVICE_PORT ?? "3003", 10);
 const RPC  = process.env.SOLANA_RPC_URL ?? "http://localhost:8899";
-const SSS_PROGRAM = process.env.SSS_TOKEN_PROGRAM_ID ?? "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV";
+const SSS_PROGRAM = process.env.SSS_TOKEN_PROGRAM_ID ?? "E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP";
 const API_SECRET  = process.env.API_SECRET ?? "";
 const START_TIME  = Date.now();
 

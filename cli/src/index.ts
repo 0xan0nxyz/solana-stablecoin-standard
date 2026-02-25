@@ -19,6 +19,8 @@ import { registerFreeze } from "./commands/freeze.js";
 import { registerPause } from "./commands/pause.js";
 import { registerBlacklist } from "./commands/blacklist.js";
 import { registerSeize } from "./commands/seize.js";
+import { registerMinters } from "./commands/minters.js";
+import { registerSupply } from "./commands/status.js";
 
 const program = new Command();
 
@@ -43,5 +45,7 @@ registerFreeze(program);
 registerPause(program);
 registerBlacklist(program);
 registerSeize(program);
+registerMinters(program);
+registerSupply(program);
 
 program.parse(process.argv);

@@ -21,7 +21,7 @@ import { randomUUID } from "crypto";
 
 const PORT = parseInt(process.env.SERVICE_PORT ?? "3001", 10);
 const RPC = process.env.SOLANA_RPC_URL ?? "http://localhost:8899";
-const SSS_PROGRAM = process.env.SSS_TOKEN_PROGRAM_ID ?? "7xPa6e4hMagWEryfLD8bPvTs8cj8FT48FCoJPnP2EdyV";
+const SSS_PROGRAM = process.env.SSS_TOKEN_PROGRAM_ID ?? "E7iCiXrkudyt5j1nVHHmbuqCEyLP2hD4VGNJyuPAdWwP";
 const API_SECRET = process.env.API_SECRET ?? "";
 
 // MOCK_EXECUTION=true (default) — verifies mint account exists on-chain but does NOT
@@ -214,7 +214,6 @@ app.get("/api/v1/supply", auth, async (req: Request, res: Response) => {
       res.status(404).json({ error: "StablecoinConfig not found", code: "NOT_FOUND", statusCode: 404 });
       return;
     }
-    // Supply values are at offsets in the account data; return raw account size for now.
     res.json({ mint, configPda: configPda.toBase58(), accountSize: info.data.length });
   } catch (err: unknown) {
     res.status(500).json({ error: String(err), code: "RPC_ERROR", statusCode: 500 });

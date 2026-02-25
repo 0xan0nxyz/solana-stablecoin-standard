@@ -18,6 +18,9 @@ import {
   createAssociatedTokenAccountIdempotent,
 } from "@solana/spl-token";
 import { expect } from "chai";
+import fs from "fs";
+import os from "os";
+import path from "path";
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -344,5 +347,176 @@ describe("SDK: SSS-2 compliance module via TypeScript SDK", () => {
       TOKEN_2022_PROGRAM_ID
     );
     expect(acct.amount).to.equal(BigInt(0));
+  });
+});
+
+describe("SDK: convenience wrappers and minter management", () => {
+  const rawProvider = anchor.AnchorProvider.env();
+  const provider = new anchor.AnchorProvider(
+    rawProvider.connection,
+    rawProvider.wallet,
+    { commitment: "confirmed", preflightCommitment: "confirmed" }
+  );
+  anchor.setProvider(provider);
+
+  const connection = provider.connection;
+  const authority = (provider.wallet as anchor.Wallet).payer;
+  const minter = Keypair.generate();
+  const recipient = Keypair.generate();
+
+  const DECIMALS = 6;
+  const QUOTA = BigInt(20_000_000);
+  const MINT_AMOUNT = BigInt(3_000_000);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let SolanaStablecoin: any;
+  let coin: SolanaStablecoinClass;
+  let mintKp: Keypair;
+
+  before(async () => {
+    ({ SolanaStablecoin } = await import("../sdk/dist/index.js"));
+    await confirmAirdrop(connection, await connection.requestAirdrop(minter.publicKey, 2e9));
+    await confirmAirdrop(connection, await connection.requestAirdrop(recipient.publicKey, 2e9));
+
+    mintKp = Keypair.generate();
+    coin = await withRetry(() =>
+      SolanaStablecoin.create(connection, authority, mintKp, {
+        name: "WrapperTestUSD",
+        symbol: "WTUSD",
+        decimals: DECIMALS,
+        preset: "sss-1",
+      })
+    );
+    await withRetry(() => coin.addMinter(authority, minter.publicKey, QUOTA));
+  });
+
+  it("getTotalSupply() returns correct value after minting", async () => {
+    await withRetry(() => coin.mintTokens(minter, recipient.publicKey, MINT_AMOUNT));
+    const supply = await coin.getTotalSupply();
+    expect(supply).to.equal(MINT_AMOUNT);
+  });
+
+  it("mint() object-style wrapper works", async () => {
+    const before = await coin.getTotalSupply();
+    await withRetry(() =>
+      coin.mint({ recipient: recipient.publicKey, amount: MINT_AMOUNT, minter })
+    );
+    const after = await coin.getTotalSupply();
+    expect(after - before).to.equal(MINT_AMOUNT);
+  });
+
+  it("getMinters() returns minter with correct quota", async () => {
+    const minters = await coin.getMinters();
+    expect(minters.length).to.be.greaterThanOrEqual(1);
+    const entry = minters.find((m: { address: { toBase58: () => string } }) => m.address.toBase58() === minter.publicKey.toBase58());
+    expect(entry).to.not.be.undefined;
+    expect(entry.quota).to.equal(QUOTA);
+  });
+
+  it("removeMinter() removes from role list", async () => {
+    const extraMinter = Keypair.generate();
+    await confirmAirdrop(connection, await connection.requestAirdrop(extraMinter.publicKey, 2e9));
+    await withRetry(() => coin.addMinter(authority, extraMinter.publicKey, BigInt(1_000_000)));
+
+    let minters = await coin.getMinters();
+    const countBefore = minters.length;
+
+    await withRetry(() => coin.removeMinter(authority, extraMinter.publicKey));
+
+    minters = await coin.getMinters();
+    expect(minters.length).to.equal(countBefore - 1);
+    const found = minters.find((m: { address: { toBase58: () => string } }) => m.address.toBase58() === extraMinter.publicKey.toBase58());
+    expect(found).to.be.undefined;
+  });
+});
+
+describe("SDK: SSS-2 compliance convenience aliases", () => {
+  const rawProvider = anchor.AnchorProvider.env();
+  const provider = new anchor.AnchorProvider(
+    rawProvider.connection,
+    rawProvider.wallet,
+    { commitment: "confirmed", preflightCommitment: "confirmed" }
+  );
+  anchor.setProvider(provider);
+
+  const connection = provider.connection;
+  const authority = (provider.wallet as anchor.Wallet).payer;
+  const target = Keypair.generate();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let SolanaStablecoin: any;
+  let coin: SolanaStablecoinClass;
+
+  before(async () => {
+    ({ SolanaStablecoin } = await import("../sdk/dist/index.js"));
+
+    const mintKp = Keypair.generate();
+    coin = await withRetry(() =>
+      SolanaStablecoin.create(connection, authority, mintKp, {
+        name: "AliasTestUSD",
+        symbol: "ATUSD",
+        decimals: 6,
+        preset: "sss-2",
+      })
+    );
+  });
+
+  it("blacklistAdd() alias works", async () => {
+    await withRetry(() =>
+      coin.compliance.blacklistAdd(target.publicKey, "alias test", authority)
+    );
+    expect(await coin.compliance.isBlacklisted(target.publicKey)).to.be.true;
+  });
+});
+
+describe("CLI: config file parsing (JSON and TOML)", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let parseToml: any;
+
+  before(async () => {
+    ({ parseToml } = await import("../cli/dist/commands/init.js"));
+  });
+
+  it("parses a JSON config file correctly", () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sss-test-"));
+    const jsonPath = path.join(tmpDir, "config.json");
+    fs.writeFileSync(
+      jsonPath,
+      JSON.stringify({
+        name: "JSON Stable",
+        symbol: "JSTB",
+        decimals: 9,
+        uri: "https://example.com/meta.json",
+        preset: "sss-2",
+      })
+    );
+
+    const raw = fs.readFileSync(jsonPath, "utf8");
+    const cfg = JSON.parse(raw);
+    expect(cfg.name).to.equal("JSON Stable");
+    expect(cfg.symbol).to.equal("JSTB");
+    expect(cfg.decimals).to.equal(9);
+    expect(cfg.uri).to.equal("https://example.com/meta.json");
+    expect(cfg.preset).to.equal("sss-2");
+
+    fs.rmSync(tmpDir, { recursive: true });
+  });
+
+  it("parses a TOML config file correctly", () => {
+    const tomlContent = [
+      '# My stablecoin config',
+      'name = "TOML Stable"',
+      'symbol = "TSTB"',
+      'decimals = 6',
+      'uri = ""',
+      'preset = "sss-1"',
+    ].join("\n");
+
+    const cfg = parseToml(tomlContent);
+    expect(cfg.name).to.equal("TOML Stable");
+    expect(cfg.symbol).to.equal("TSTB");
+    expect(cfg.decimals).to.equal(6);
+    expect(cfg.uri).to.equal("");
+    expect(cfg.preset).to.equal("sss-1");
   });
 });
